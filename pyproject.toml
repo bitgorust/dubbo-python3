@@ -9,6 +9,7 @@ packages = [{include = "dubbo_python_client"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 kazoo = "^2.8.0"
+uvicorn = "^0.18.3"
 
 
 [build-system]
