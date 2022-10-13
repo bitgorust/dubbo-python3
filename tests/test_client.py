@@ -3,7 +3,7 @@ import asyncio
 
 class DubboProtocol():
 
-    async def __init__(self) -> None:
+    def __init__(self) -> None:
         self._listen()
 
 
