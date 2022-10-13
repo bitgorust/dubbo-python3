@@ -1,0 +1,16 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+max_line_length = 80
+
+[*.py]
+trim_trailing_whitespace = true
+indent_size = 4
+
+[*.{md,toml}]
+trim_trailing_whitespace = false
+indent_size = 2
