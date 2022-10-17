@@ -32,7 +32,7 @@ class TestZookeeper(unittest.TestCase):
         zk.add_listener(my_listener)
         zk.start()
 
-        providers = (zk.get_children(urllib.parse.quote('/dubbo/com.qiyi.qibo.common.PlaybackService/providers')) or []) + (zk.get_children(urllib.parse.quote('/dubbo/com.qiyi.azeroth.corpus.play.control.api.PlayControlService/providers')) or [])
+        providers = (zk.get_children(urllib.parse.quote('/dubbo/xxx/providers')) or []) + (zk.get_children(urllib.parse.quote('/dubbo/xxx/providers')) or [])
         provider = urllib.parse.unquote(providers[0])
         print(provider)
         result = urllib.parse.urlparse(provider)

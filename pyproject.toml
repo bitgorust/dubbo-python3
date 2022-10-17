@@ -2,7 +2,7 @@
 name = "dubbo-python-client"
 version = "0.1.0"
 description = "Python Dubbo Client"
-authors = ["zengjing <zengjing@qiyi.com>"]
+authors = ["bitgorust <bitgorust@gmail.com>"]
 readme = "README.md"
 packages = []
 
