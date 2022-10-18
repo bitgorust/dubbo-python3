@@ -1,3 +1,5 @@
+import os
+from typing import Optional
 from time import sleep
 import urllib.parse
 import unittest
@@ -15,20 +17,31 @@ def my_listener(state):
 class TestRegistry(unittest.TestCase):
 
     def test_get_registry(self):
-        zk_registry = RegistryFactory.get_registry(CenterConfig('zk://zk_hosts'))
-        self.assertIsNotNone(zk_registry)
-        self.assertEqual('zk', zk_registry.scheme)
-        self.assertEqual('zk_hosts', zk_registry.hosts)
-        nacos_registry = RegistryFactory.get_registry(CenterConfig('nacos://nacos_hosts'))
-        self.assertIsNotNone(nacos_registry)
-        self.assertEqual('nacos', nacos_registry.scheme)
-        self.assertEqual('nacos_hosts', nacos_registry.hosts)
+        zk_address: Optional[str] = os.getenv('ZK_ADDRESS')
+        print(zk_address)
+        if zk_address is not None:
+            zk_registry = RegistryFactory.get_registry(CenterConfig(zk_address))
+            self.assertIsNotNone(zk_registry)
+            self.assertEqual('zk', zk_registry.scheme)
+            print(zk_registry.hosts)
+
+        nacos_address: Optional[str] = os.getenv('NACOS_ADDRESS')
+        print(nacos_address)
+        if nacos_address is not None:
+            nacos_registry = RegistryFactory.get_registry(CenterConfig(nacos_address))
+            self.assertIsNotNone(nacos_registry)
+            self.assertEqual('nacos', nacos_registry.scheme)
+            print(nacos_registry.hosts)
 
 
 class TestZookeeper(unittest.TestCase):
 
     def test_client(self):
-        zk = KazooClient(hosts='')
+        hosts: Optional[str] = os.getenv('ZK_ADDRESS')
+        if not hosts:
+            return
+
+        zk = KazooClient(hosts=hosts)
         zk.add_listener(my_listener)
         zk.start()
 

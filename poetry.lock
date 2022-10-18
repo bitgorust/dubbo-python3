@@ -46,6 +46,17 @@ sasl = ["pure-sasl (>=0.5.1)"]
 test = ["eventlet (>=0.17.1)", "gevent (>=1.2)", "mock", "objgraph", "pytest", "pytest-cov"]
 
 [[package]]
+name = "python-dotenv"
+version = "0.21.0"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -71,7 +82,7 @@ standard = ["colorama (>=0.4)", "httptools (>=0.4.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "4475969161b4211e58f3da68c7cf244d029c6d664de38115465d5c5f4c0dcc2b"
+content-hash = "fc92195969a48684e6131edc6c7bb73308cece524dda032c51dc420dc3f2f803"
 
 [metadata.files]
 click = [
@@ -89,6 +100,10 @@ h11 = [
 kazoo = [
     {file = "kazoo-2.9.0-py2.py3-none-any.whl", hash = "sha256:b73dd6829ae6b3a78cd37ba393749f9d30860dbe39debb27c36eff159949a14e"},
     {file = "kazoo-2.9.0.tar.gz", hash = "sha256:800318c7f3dab648cdf616dfb25bdabeefab2a6837aa6951e0fa3ff80e656969"},
+]
+python-dotenv = [
+    {file = "python-dotenv-0.21.0.tar.gz", hash = "sha256:b77d08274639e3d34145dfa6c7008e66df0f04b7be7a75fd0d5292c191d79045"},
+    {file = "python_dotenv-0.21.0-py3-none-any.whl", hash = "sha256:1684eb44636dd462b66c3ee016599815514527ad99965de77f43e0944634a7e5"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
