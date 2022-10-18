@@ -1,25 +1,28 @@
 """Registry classes"""
+from typing import Any, Callable, Optional
 from abc import abstractmethod
-from typing import Optional
+import asyncio
+import threading
+import urllib.parse
 
-from dubbo.config import CenterConfig
+from kazoo.client import KazooClient, KazooState, WatchedEvent
 
-__all__ = ('get_providers', 'Registry', 'RegistryFactory')
+from dubbo.config import ApplicationConfig, CenterConfig
 
-
-def get_providers(interface: str, version: Optional[str] = None, group: Optional[str] = None):
-    pass
+__all__ = ('Registry', 'RegistryFactory')
 
 
 class Registry():
 
-    __slots__ = ('_scheme', '_hosts')
+    __slots__ = ('_application', '_scheme', '_hosts')
 
+    _application: str
     _scheme: str
     _hosts: str
 
-    def __init__(self, config: CenterConfig) -> None:
-        self._scheme, self._hosts = config.address.split('://')
+    def __init__(self, application_config: ApplicationConfig, registry_config: CenterConfig) -> None:
+        self._application = application_config.name
+        self._scheme, self._hosts = registry_config.address.split('://')
 
     @property
     def scheme(self) -> str:
@@ -30,28 +33,91 @@ class Registry():
         return self._hosts
 
     @abstractmethod
-    def subscribe(self, node: str) -> None:
+    def ready(self) -> bool:
         pass
 
     @abstractmethod
-    def children(self, node: str) -> None:
+    async def children(self, interface: str) -> list[str]:
         pass
 
 
 class ZookeeperRegistry(Registry):
 
-    __slots__ = ()
+    __slots__ = ('_client', '_nodes', '_loop')
 
-    def __init__(self, config: CenterConfig) -> None:
-        super().__init__(config)
+    _loop: asyncio.AbstractEventLoop
+    _client: KazooClient
+    _nodes: dict[str, list[str]]
+
+    PROVIDER_PATH: str = '/dubbo/{}/providers'
+
+    def __init__(self, application_config: ApplicationConfig, registry_config: CenterConfig) -> None:
+        super().__init__(application_config, registry_config)
+        try:
+            self._loop = asyncio.get_running_loop()
+        except:
+            self._loop = asyncio.new_event_loop()
+        self._client = KazooClient(hosts=self.hosts)
+        self._client.add_listener(self._state_listener)
+        self._client.start()
+        self._nodes = dict()
+
+    @property
+    def ready(self) -> bool:
+        return self._client.connected
+
+    def _get_children_task(self, future: asyncio.Future[list[str]], path: str) -> None:
+        async_result = self._client.get_children_async(urllib.parse.quote(path), watch=self._node_watcher)
+        async_result.rawlink(lambda result: future.set_result(result.get()))
+
+    def _get_children(self, interface: str) -> asyncio.Future[list[str]]:
+        future = self._loop.create_future()
+        path = self.PROVIDER_PATH.format(interface)
+        self._loop.call_soon(self._get_children_task, future, path)
+        return future
+
+    async def children(self, interface: str) -> list[str]:
+        if interface not in self._nodes:
+            print(f'{threading.get_native_id()} subscribing {interface}')
+            children = await self._get_children(interface)
+            print(f'{threading.get_native_id()} {interface} has {len(children or [])} children')
+            self._nodes[interface] = children or []
+        return self._nodes.get(interface, [])
+
+    def _state_listener(self, state: KazooState) -> None:
+        if state == KazooState.CONNECTED:
+            print(f'{threading.get_native_id()} resubscribing')
+            self._loop.call_soon(self._resubscribe)
+            print(f'{threading.get_native_id()} resubscribed')
+        else:
+            print(f'{threading.get_native_id()} state is {state}')
+            self._client.logger.debug('zookeeper connection state: %s', state)
+
+    def _resubscribe(self) -> None:
+        print(f'{threading.get_native_id()} has {len(self._nodes)} interfaces')
+        for interface in self._nodes.keys():
+            node = self.PROVIDER_PATH.format(interface)
+            print(f'{threading.get_native_id()} format {interface} into {node}')
+            children = [] #self._client.get_children(urllib.parse.quote(node), watch=self._node_watcher)
+            print(f'{threading.get_native_id()} has {len(children or [])} children')
+            self._nodes[interface] = children or []
+
+    async def _node_watcher(self, event: WatchedEvent) -> None:
+        print(f'{threading.get_native_id()} event.path is {event.path}')
+        interface = event.path.split('/')[2]
+        print(f'{threading.get_native_id()} event.interface is {interface}')
+        children = await self._loop.run_in_executor(None, lambda: self._client.get_children(urllib.parse.quote(event.path), watch=self._node_watcher))
+        print(f'{threading.get_native_id()} event.children.size is {len(children or [])}')
+        self._nodes[interface] = children or []
+
 
 
 class NacosRegistry(Registry):
 
     __slots__ = ()
 
-    def __init__(self, config: CenterConfig) -> None:
-        super().__init__(config)
+    def __init__(self, application_config: ApplicationConfig, registry_config: CenterConfig) -> None:
+        super().__init__(application_config, registry_config)
 
 
 class RegistryFactory():
@@ -59,6 +125,6 @@ class RegistryFactory():
     __slots__ = ()
 
     @staticmethod
-    def get_registry(config: CenterConfig) -> Registry:
-        assert config.address is not None and ('zk://' in config.address or 'nacos://' in config.address)
-        return ZookeeperRegistry(config) if 'zk://' in config.address else NacosRegistry(config)
+    def get_registry(application_config: ApplicationConfig, registry_config: CenterConfig) -> Registry:
+        assert registry_config.address is not None and ('zk://' in registry_config.address or 'nacos://' in registry_config.address)
+        return ZookeeperRegistry(application_config, registry_config) if 'zk://' in registry_config.address else NacosRegistry(application_config, registry_config)
