@@ -60,6 +60,14 @@ class TestRegistry(unittest.TestCase):
             print(interface)
             print('')
 
+        await asyncio.sleep(30)
+
+        for interface in interfaces:
+            children = await zk_registry.children(interface)
+            self.assertGreaterEqual(len(children), 0)
+            print(interface)
+            print('')
+
 
 class TestZookeeper(unittest.TestCase):
 
