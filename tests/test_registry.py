@@ -56,9 +56,8 @@ class TestRegistry(unittest.TestCase):
 
         for interface in interfaces:
             children = await zk_registry.children(interface)
-            self.assertGreaterEqual(0, len(children))
+            self.assertGreaterEqual(len(children), 0)
             print(interface)
-            print(children)
             print('')
 
 

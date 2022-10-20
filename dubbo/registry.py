@@ -43,16 +43,18 @@ class Registry():
 
 class ZookeeperRegistry(Registry):
 
-    __slots__ = ('_client', '_nodes', '_loop')
+    __slots__ = ('_client', '_lock', '_loop', '_nodes')
 
-    _loop: asyncio.AbstractEventLoop
     _client: KazooClient
+    _lock: threading.Lock
+    _loop: asyncio.AbstractEventLoop
     _nodes: dict[str, list[str]]
 
     PROVIDER_PATH: str = '/dubbo/{}/providers'
 
     def __init__(self, application_config: ApplicationConfig, registry_config: CenterConfig) -> None:
         super().__init__(application_config, registry_config)
+        self._lock = threading.Lock()
         try:
             self._loop = asyncio.get_running_loop()
         except:
@@ -66,22 +68,15 @@ class ZookeeperRegistry(Registry):
     def ready(self) -> bool:
         return self._client.connected
 
-    def _get_children_task(self, future: asyncio.Future[list[str]], path: str) -> None:
-        async_result = self._client.get_children_async(urllib.parse.quote(path), watch=self._node_watcher)
-        async_result.rawlink(lambda result: future.set_result(result.get()))
-
-    def _get_children(self, interface: str) -> asyncio.Future[list[str]]:
-        future = self._loop.create_future()
-        path = self.PROVIDER_PATH.format(interface)
-        self._loop.call_soon(self._get_children_task, future, path)
-        return future
-
     async def children(self, interface: str) -> list[str]:
         if interface not in self._nodes:
-            print(f'{threading.get_native_id()} subscribing {interface}')
-            children = await self._get_children(interface)
-            print(f'{threading.get_native_id()} {interface} has {len(children or [])} children')
-            self._nodes[interface] = children or []
+            with self._lock:
+                if interface not in self._nodes:
+                    print(f'{threading.get_native_id()} subscribing {interface}')
+                    path = self.PROVIDER_PATH.format(interface)
+                    children = await self._loop.run_in_executor(None, self._client.get_children, urllib.parse.quote(path), self._node_watcher)
+                    print(f'{threading.get_native_id()} {interface} has {len(children or [])} children')
+                    self._nodes[interface] = children or []
         return self._nodes.get(interface, [])
 
     def _state_listener(self, state: KazooState) -> None:
@@ -96,9 +91,9 @@ class ZookeeperRegistry(Registry):
     def _resubscribe(self) -> None:
         print(f'{threading.get_native_id()} has {len(self._nodes)} interfaces')
         for interface in self._nodes.keys():
-            node = self.PROVIDER_PATH.format(interface)
-            print(f'{threading.get_native_id()} format {interface} into {node}')
-            children = [] #self._client.get_children(urllib.parse.quote(node), watch=self._node_watcher)
+            path = self.PROVIDER_PATH.format(interface)
+            print(f'{threading.get_native_id()} format {interface} into {path}')
+            children = self._client.get_children(urllib.parse.quote(path), watch=self._node_watcher)
             print(f'{threading.get_native_id()} has {len(children or [])} children')
             self._nodes[interface] = children or []
 
