@@ -1,16 +1,31 @@
-"""Bootstrap class"""
-from __future__ import annotations
-from typing import Optional, Tuple, Union
-from dubbo.config import ApplicationConfig, CenterConfig, ProtocolConfig, ReferenceConfig
+"""The bootstrap class of Dubbo"""
 from dubbo.proxy import Proxy
 from dubbo.registry import Registry
+from __future__ import annotations
 
-__all__ = ('instance',)
+
+from typing import Optional, Tuple, Union
+
+from abc.meta import SingletonMeta
+from common.config import (
+    ApplicationConfig,
+    ProtocolConfig,
+    CenterConfig,
+    ReferenceConfig,
+)
 
 
-class Bootstrap():
+class Bootstrap(metaclass=SingletonMeta):
 
-    __slots__ = ('_application_config', '_protocol_config', '_registry_config', '_metadata_report_config', '_reference_config', '_registry_center', '_reference_proxy')
+    __slots__ = (
+        "_application_config",
+        "_protocol_config",
+        "_registry_config",
+        "_metadata_report_config",
+        "_reference_config",
+        "_registry_center",
+        "_reference_proxy",
+    )
 
     _application_config: Optional[ApplicationConfig]
     _protocol_config: dict[str, ProtocolConfig]
@@ -44,15 +59,20 @@ class Bootstrap():
         return self
 
     def metadata_report(self, config: Union[str, CenterConfig]) -> Bootstrap:
-        metadata_report_config = CenterConfig(config) if isinstance(config, str) else config
+        metadata_report_config = (
+            CenterConfig(config) if isinstance(config, str) else config
+        )
         self._metadata_report_config[metadata_report_config.id] = metadata_report_config
         return self
 
-    def reference(self, config: ReferenceConfig,
-                  name: Optional[str] = None,
-                  protocols: Optional[Tuple[str]] = None,
-                  registries: Optional[Tuple[str]] = None,
-                  metadata_report: Optional[str] = None) -> Bootstrap:
+    def reference(
+        self,
+        config: ReferenceConfig,
+        name: Optional[str] = None,
+        protocols: Optional[Tuple[str]] = None,
+        registries: Optional[Tuple[str]] = None,
+        metadata_report: Optional[str] = None,
+    ) -> Bootstrap:
         key = config.id if not name else name
         assert key not in self._reference_config
 
@@ -60,16 +80,28 @@ class Bootstrap():
             if protocols is None:
                 config.protocols = tuple(self._protocol_config.values())
             else:
-                config.protocols = tuple([self._protocol_config[key] for key in protocols if key in self._protocol_config])
+                config.protocols = tuple(
+                    [
+                        self._protocol_config[key]
+                        for key in protocols
+                        if key in self._protocol_config
+                    ]
+                )
         else:
             self._protocol_config.update(config.protocols)
         assert len(config.protocols) > 0
 
         if not config.registries:
-            if (registries is None):
+            if registries is None:
                 config.registries = tuple(self._registry_config.values())
             else:
-                config.registries = tuple([self._registry_config[key] for key in registries if key in self._registry_config])
+                config.registries = tuple(
+                    [
+                        self._registry_config[key]
+                        for key in registries
+                        if key in self._registry_config
+                    ]
+                )
         else:
             self._registry_config.update(config.registries)
         assert len(config.registries) > 0
@@ -78,7 +110,9 @@ class Bootstrap():
             if metadata_report is not None:
                 config.metadata_report = self._metadata_report_config[metadata_report]
         else:
-            self._metadata_report_config.setdefault(config.metadata_report.id, config.metadata_report)
+            self._metadata_report_config.setdefault(
+                config.metadata_report.id, config.metadata_report
+            )
 
         self._reference_config[key] = config
         return self
@@ -86,6 +120,3 @@ class Bootstrap():
     def start(self) -> None:
         self._registry_center = {}
         pass
-
-
-instance = Bootstrap()

@@ -1,7 +1,5 @@
 """Dubbo configuration classes."""
-
-__all__ = ('ApplicationConfig', 'ProtocolConfig', 'CenterConfig', 'ReferenceConfig')
-
+__all__ = ("ApplicationConfig", "ProtocolConfig", "CenterConfig", "ReferenceConfig")
 
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple
@@ -18,12 +16,12 @@ class BaseConfig(ABC):
 
 class ApplicationConfig(BaseConfig):
 
-    __slots__ = ('_name', '_environment')
+    __slots__ = ("_name", "_environment")
 
     _name: str
     _environment: str
 
-    def __init__(self, name: str, environment: str = 'test') -> None:
+    def __init__(self, name: str, environment: str = "test") -> None:
         self._name = name
         self._environment = environment
 
@@ -42,12 +40,12 @@ class ApplicationConfig(BaseConfig):
 
 class ProtocolConfig(BaseConfig):
 
-    __slots__ = ('_name', '_port')
+    __slots__ = ("_name", "_port")
 
     _name: str
     _port: int
 
-    def __init__(self, name: str = 'dubbo', port: int = 20880) -> None:
+    def __init__(self, name: str = "dubbo", port: int = 20880) -> None:
         self._name = name
         self._port = port
 
@@ -66,7 +64,7 @@ class ProtocolConfig(BaseConfig):
 
 class CenterConfig(BaseConfig):
 
-    __slots__ = ('_address')
+    __slots__ = "_address"
 
     _address: str
 
@@ -84,7 +82,14 @@ class CenterConfig(BaseConfig):
 
 class ReferenceConfig(BaseConfig):
 
-    __slots__ = ('_interface', '_version', '_group', '_protocols', '_registries', '_metadata_report')
+    __slots__ = (
+        "_interface",
+        "_version",
+        "_group",
+        "_protocols",
+        "_registries",
+        "_metadata_report",
+    )
 
     _interface: str
     _version: Optional[str]
@@ -93,11 +98,15 @@ class ReferenceConfig(BaseConfig):
     _registries: dict[str, CenterConfig]
     _metadata_report: Optional[CenterConfig]
 
-    def __init__(self, interface: str,
-                 version: Optional[str] = None, group: Optional[str] = None,
-                 protocols: Optional[Tuple[ProtocolConfig]] = None,
-                 registries: Optional[Tuple[CenterConfig]] = None,
-                 metadata_report: Optional[CenterConfig] = None) -> None:
+    def __init__(
+        self,
+        interface: str,
+        version: Optional[str] = None,
+        group: Optional[str] = None,
+        protocols: Optional[Tuple[ProtocolConfig]] = None,
+        registries: Optional[Tuple[CenterConfig]] = None,
+        metadata_report: Optional[CenterConfig] = None,
+    ) -> None:
         self._interface = interface
         self._version = version
         self._group = group
@@ -135,7 +144,9 @@ class ReferenceConfig(BaseConfig):
 
     @registries.setter
     def registries(self, values: Optional[Tuple[CenterConfig]]) -> None:
-        self._registries = {} if not values else {config.id: config for config in values}
+        self._registries = (
+            {} if not values else {config.id: config for config in values}
+        )
 
     @property
     def metadata_report(self) -> Optional[CenterConfig]:

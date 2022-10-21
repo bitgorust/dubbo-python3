@@ -6,7 +6,7 @@ import urllib.parse
 import unittest
 
 from kazoo.client import KazooClient
-from dubbo.config import ApplicationConfig, CenterConfig
+from dubbo.config import ApplicationConfig, CenterConfig, ReferenceConfig
 
 from dubbo.registry import RegistryFactory
 
@@ -39,14 +39,14 @@ class TestRegistry(unittest.TestCase):
         print(zk_address)
         if not zk_address:
             return
-        env_interfaces: Optional[str] = os.getenv('INTERFACES')
-        interfaces: list[str] = [] if not env_interfaces else env_interfaces.split(',')
-        if len(interfaces) == 0:
+        env_references: Optional[str] = os.getenv('REFERENCES')
+        references: list[str] = [] if not env_references else env_references.split(',')
+        if len(references) == 0:
             return
 
-        asyncio.run(self._test_zk(zk_address, interfaces))
+        asyncio.run(self._test_zk(zk_address, references))
 
-    async def _test_zk(self, zk_address, interfaces):
+    async def _test_zk(self, zk_address: str, references: list[str]):
         application_config: ApplicationConfig = ApplicationConfig('test')
         registry_config: CenterConfig = CenterConfig(zk_address)
         zk_registry = RegistryFactory.get_registry(application_config, registry_config)
@@ -54,19 +54,12 @@ class TestRegistry(unittest.TestCase):
         if not zk_registry.ready:
             return
 
-        for interface in interfaces:
-            children = await zk_registry.children(interface)
+        for reference in references:
+            interface, version, group = reference.split(':')
+            reference_config = ReferenceConfig(interface, version, group)
+            children = await zk_registry.children(reference_config)
+            print(f'{reference_config.id}: {len(children)}')
             self.assertGreaterEqual(len(children), 0)
-            print(interface)
-            print('')
-
-        await asyncio.sleep(30)
-
-        for interface in interfaces:
-            children = await zk_registry.children(interface)
-            self.assertGreaterEqual(len(children), 0)
-            print(interface)
-            print('')
 
 
 class TestZookeeper(unittest.TestCase):
