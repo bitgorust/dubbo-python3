@@ -11,6 +11,7 @@ python = "^3.9"
 kazoo = "^2.8.0"
 uvicorn = "^0.18.3"
 python-dotenv = "^0.21.0"
+atomicl = "^0.1.1"
 
 
 [build-system]

@@ -1,4 +1,12 @@
 [[package]]
+name = "atomicl"
+version = "0.1.1"
+description = "Yet another implementation of AtomicLong"
+category = "main"
+optional = false
+python-versions = "~=3.4"
+
+[[package]]
 name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
@@ -82,9 +90,24 @@ standard = ["colorama (>=0.4)", "httptools (>=0.4.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "fc92195969a48684e6131edc6c7bb73308cece524dda032c51dc420dc3f2f803"
+content-hash = "b0772893b718d6eeea2c0075ca51a35c10dfdbd07e89a517ca92bd65664d09a6"
 
 [metadata.files]
+atomicl = [
+    {file = "atomicl-0.1.1-cp34-cp34m-macosx_10_6_intel.whl", hash = "sha256:fbfbcd3d79dfd97c246d4c7d0893084a13583365e9e511db47eabcc7da9e9162"},
+    {file = "atomicl-0.1.1-cp34-cp34m-manylinux1_i686.whl", hash = "sha256:e022418d3a3b3f9d34a46e4796091795926750e9ca99467a42c0b74bf43d5de0"},
+    {file = "atomicl-0.1.1-cp34-cp34m-manylinux1_x86_64.whl", hash = "sha256:d370613911bf54abeae8968d70f2b75c6ff362dbf724d04605f466c0e7bb7cbb"},
+    {file = "atomicl-0.1.1-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:984876333dfac60a86415894aae741eafabd3f68bc085f3b2f3b5d3aab0f1af4"},
+    {file = "atomicl-0.1.1-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:b0677aca945207fe8c4f33a02ebda27c529818b20d1ea50cab5f25dbd7cd74fa"},
+    {file = "atomicl-0.1.1-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:b8b3f59556f46cb170a4aebae240b0143a9691983a427761fe39f7b45be38378"},
+    {file = "atomicl-0.1.1-cp36-cp36m-macosx_10_6_intel.whl", hash = "sha256:e7df2b45ab33e97bdabb5c513c7e0d99d2723b7e9687e5ae61d5335754ddba67"},
+    {file = "atomicl-0.1.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:01b81880c07ff9829f586a618a67d347206da4881e2e6b6246fe6a3d9097dc1f"},
+    {file = "atomicl-0.1.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:d39f670e7926cef5df9776131aa68011c10b744428357f6639b8528c7e409bdf"},
+    {file = "atomicl-0.1.1-cp37-cp37m-macosx_10_6_intel.whl", hash = "sha256:e94fcc00056b3fb372253305c565fe848eef3b1f6e18770ac0dd5e98d13d4069"},
+    {file = "atomicl-0.1.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:66cbb615c241dc6bb404ac4e9eb5d2f620c2e8ba36a1046821e0bf55ce8fafd3"},
+    {file = "atomicl-0.1.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:f0d0265d04cc33eac458985cf52415e5f165aca7d046dfa20bf615bbd01d3d24"},
+    {file = "atomicl-0.1.1.tar.gz", hash = "sha256:8a0a5417ed5d6dfc637ed28a7cc7d677a706355f036c074132bc4834afe9fc2d"},
+]
 click = [
     {file = "click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
     {file = "click-8.1.3.tar.gz", hash = "sha256:7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e"},
